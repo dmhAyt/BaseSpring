@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dmh.mapper.UserMapper">
+
+  <sql id="selectParameter">
+    id,user_code as userCode,user_name as userName,user_pass as userPass,account_capacity as accountCapacity,used_capacity as usedCapacity,
+    account_create_date as accountCreateDate ,account_alter_date as accountAlterDate ,account_is_legitimate as accountIsLegitimate,
+    legitimate_description as legitimateDescription
+  </sql>
+  <sql id="tableName">yt_user</sql>
+
+  <update id="updateUserInfor">
+    update <include refid="tableName"/>
+    <set>
+      <if test="userName!=null">
+        user_name = #{userName},
+      </if>
+      <if test="userPass!=null">
+        user_pass = #{userPass},
+      </if>
+      <if test="accountAlterDate != null">
+        account_alter_date = #{accountAlterDate},
+      </if>
+      <if test="usedCapacity>=0">
+        used_capacity = #{usedCapacity},
+      </if>
+      <if test="accountCapacity>0">
+        account_capacity = #{accountCapacity},
+      </if>
+    </set>
+    where id = #{id}
+  </update>
+
+  <delete id="deleteUserById" parameterType="Integer">
+    delete from <include refid="tableName"/> where id = #{id}
+  </delete>
+
+  <!--通过ID查询一个用户 -->
+  <select id="findUserByCodeAndPass" parameterType="String"
+    resultType="User">
+    select
+     <include refid="selectParameter"/>
+          from <include refid="tableName"/> where user_code = #{code} and user_pass = #{pass}
+  </select>
+  <select id="findUserById" parameterType="Integer"
+    resultType="User">
+    select
+    <include refid="selectParameter"/>
+    from <include refid="tableName"/> where id = #{v}
+  </select>
+  <insert id="addUser" parameterType="User" >
+    insert into <include refid="tableName"/> (user_code,user_name,user_pass,account_capacity,used_capacity,account_create_date,account_alter_date,account_is_legitimate,legitimate_description)
+     values (#{userCode},#{userName},#{userPass},#{accountCapacity},#{usedCapacity},#{accountCreateDate},#{accountAlterDate},#{accountIsLegitimate},#{legitimateDescription})
+</insert>
+
+
+   <resultMap id="userCount" type="Map">
+     <result column="total" javaType="Integer" property="total"/>
+     <result column="legalUserCount" javaType="Integer" property="legalUserCount"/>
+   </resultMap>
+
+  <select id="findUserCount" resultMap="userCount">
+     select count(*) as total,(select count(*) from yt_user where account_is_legitimate = 'Y') as legalUserCount from <include refid="tableName"/>
+  </select>
+  <select id="findAllUser" resultType="com.dmh.dto.User">
+    select <include refid="selectParameter"/> from <include refid="tableName"/>
+  </select>
+
+
+</mapper>

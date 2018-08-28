@@ -26,8 +26,8 @@ public class EmailServerEvent extends ApplicationEvent {
     return source;
   }
 
-  public void setSource(Email source) {
-    this.source = source;
+  public void setSource(Object source,Email email) {
+    this.source = email;
   }
 
   private Email source;

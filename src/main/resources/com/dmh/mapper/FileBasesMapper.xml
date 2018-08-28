@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dmh.mapper.FileBasesMapper" >
+  <sql id="tableName">yt_file</sql>
+ <sql id="selectPatameter">
+   file_id as fileId,file_path_main as filePathMain,file_path_first as filePathFirst,file_path_second as filePathSecond,file_type as fileType,file_md5 as fileMd5,
+   file_size as fileSize,file_create_date as fileCreateDate,file_reference_number as fileReferenceNumber,file_upload_user_id as fileUploadUserId,file_is_legal as fileIsLegal
+ </sql>
+
+
+  <insert id="addFileToSystem" parameterType="FileBase">
+    insert into <include refid="tableName"/> (file_path_main,file_path_first,file_path_second,file_type,file_md5,file_size,file_create_date,file_reference_number,file_upload_user_id,file_is_legal)
+    values (#{fileBase.filePathMain},#{fileBase.filePathFirst},#{fileBase.filePathSecond},#{fileBase.fileType},#{fileBase.fileMd5},#{fileBase.fileSize},#{fileBase.fileCreateDate},#{fileBase.fileReferenceNumber}
+    ,#{fileBase.fileUploadUserId},#{fileBase.fileIsLegal})
+  </insert>
+  <update id="updateFileInfor" parameterType="FileBase">
+    update <include refid="tableName"/>
+    <set>
+      <if test="fileBase.filePathMain!=null"> file_path_main=#{fileBase.filePathMain}, </if>
+      <if test="fileBase.filePathFirst!=null">  file_path_first=#{fileBase.filePathFirst},</if>
+      <if test="fileBase.filePathSecond!=null">  file_path_second=#{fileBase.filePathSecond},</if>
+      <if test="fileBase.fileReferenceNumber>=0">file_reference_number=#{fileBase.fileReferenceNumber},</if>
+      <if test="fileBase.fileIsLegal!=null">file_is_legal=#{fileBase.fileIsLegal}</if>
+    </set>
+    where file_id = #{fileBase.fileId}
+  </update>
+  <delete id="deleteFileFrom" parameterType="Integer">
+    delete from <include refid="tableName"/> where file_id = #{fileId} and file_reference_number = 0
+  </delete>
+  <select id="findFileByIdOrMd5" resultType="com.dmh.dto.FileBase">
+    select <include refid="selectPatameter"/> from <include refid="tableName"/>
+    <where>
+      <if test="fileMd5==null and fileId!=null">file_id = #{fileId}</if>
+      <if test="fileMd5!=null and fileId==null">file_md5 = #{fileMd5}</if>
+      <if test="fileMd5==null and fileId==null">@rownum = 1</if>
+    </where>
+  </select>
+  <select id="findListFile" resultType="com.dmh.dto.FileBase">
+    select <include refid="selectPatameter"/> from <include refid="tableName"/>
+    where file_id > #{pageBegin} order by #{orderParameter} asc  limit  #{pageSize}
+  </select>
+  <select id="findListFileForUser" resultType="com.dmh.dto.FileBase">
+    select <include refid="selectPatameter"/> from <include refid="tableName"/>
+    where file_upload_user_id = #{userId} limit #{pageBegin},#{pageSize}
+  </select>
+  <select id="findListFileForFileId" resultType="com.dmh.dto.FileBase">
+    select <include refid="selectPatameter"/> from <include refid="tableName"/>
+    where file_id in
+    <foreach collection="fileIdList" item="item" index="index" open="(" close=")" separator=",">
+      #{item}
+    </foreach>
+  </select>
+
+</mapper>

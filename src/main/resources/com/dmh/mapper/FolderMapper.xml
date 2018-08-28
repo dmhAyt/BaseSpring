@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dmh.mapper.FolderMapper">
+  <sql id="tableName">yt_folder</sql>
+  <sql id="selectParameter">
+  folder_id as folderId,folder_name as folderName,folder_type as folderType,folder_create_date as folderCreateDate,folder_superior_id as folderSuperiorId,
+  folder_file_id as folderFileId,folder_size as folderSizes,folder_active as folderActive, floder_own_user as folderOwnUser,row_version as rowVersion
+  </sql>
+
+  <insert id="addFolder">
+    insert into <include refid="tableName"/> (folder_name,folder_type,folder_create_date,folder_superior_id,folder_file_id,folder_size,folder_active,floder_own_user,row_version) values
+    (#{folder.folderName},#{folder.folderType},#{folder.folderCreateDate},#{folder.folderSuperiorId},#{folder.folderFileId},#{folder.folderSizes},#{folder.folderActive},#{folder.folderOwnUser},#{folder.rowVersion})
+  </insert>
+  <update id="updateFolder">
+    update <include refid="tableName"/>
+    <set>
+      <if test="folder.folderName != null ">folder_name = #{folder.folderName},</if>
+      <if test="folder.folderSuperiorId &gt;= 0">folder_superior_id = #{folder.folderSuperiorId},</if>
+      <if test="folder.folderActive !=null">folder_active = #{folder.folderActive}</if>
+    </set>
+    where folder_id = #{folder.folderId}
+  </update>
+  <update id="deleteFolder">
+    update <include refid="tableName"/>
+    set folder_active = false
+
+    where folder_id = #{folderId}  or folder_superior_id = #{folderId}
+  </update>
+  <select id="findFolderById" resultType="com.dmh.dto.Folder">
+    select <include refid="selectParameter"/> from <include refid="tableName"/>
+    where folder_id = #{folderId} and floder_own_user=#{userId} and folder_active = true
+  </select>
+  <select id="findFolderByIdAndName" resultType="com.dmh.dto.Folder">
+    select <include refid="selectParameter"/> from <include refid="tableName"/>
+    where folder_id = #{folderId} and folder_name = #{folderName} and floder_own_user=#{userId} and folder_active = true
+  </select>
+  <select id="findFolderBySuperiorId" resultType="com.dmh.dto.Folder">
+    select <include refid="selectParameter"/> from <include refid="tableName"/>
+    where folder_superior_id= #{superId} and floder_own_user=#{userId} and folder_active = 1
+  </select>
+</mapper>

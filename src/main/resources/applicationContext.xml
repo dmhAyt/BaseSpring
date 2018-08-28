@@ -4,23 +4,14 @@
   xmlns:context="http://www.springframework.org/schema/context"
   xmlns:aop="http://www.springframework.org/schema/aop"
   xmlns:task="http://www.springframework.org/schema/task"
-  xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd">
+  xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+   http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+   http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+   http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd">
 
   <import resource="spring-mybaties.xml"/>
-  <context:component-scan base-package="com.dmh.event"/>
-<!--  <bean id="applicationEventAsyncMulticaster" class="org.springframework.context.event.SimpleApplicationEventMulticaster">
-    <property name="taskExecutor">
-      <bean class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
-        <property name="corePoolSize" value="5"/>
-        <property name="keepAliveSeconds" value="3000"/>
-        <property name="maxPoolSize" value="50"/>
-        <property name="queueCapacity" value="200"/>
-      </bean>
-    </property>
-  </bean>-->
-  <aop:aspectj-autoproxy proxy-target-class="true"/>
-  <task:executor id="executor" pool-size="10"/>
-  <task:annotation-driven executor="executor" proxy-target-class="true"/>
-
+  <!--<import resource="spring-jdbc.xml"/>-->
+  <!-- 设置扫描包 service -->
+  <context:component-scan base-package="com.dmh.service"/>
 
 </beans>
