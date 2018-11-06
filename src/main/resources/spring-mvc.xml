@@ -29,5 +29,14 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
     <property name="prefix" value="WEB-INF/"/>
     <property name="suffix" value=".jsp"/>
   </bean>
-
+  <!--
+  <mvc:interceptors>
+    <mvc:interceptor>
+      <mvc:mapping path="/*.action"/>
+      <mvc:exclude-mapping path="/login.action"/>
+      <mvc:exclude-mapping path="/register.action"/>
+      <bean class="com.dmh.interceptor.LoginInterceptor"/>
+    </mvc:interceptor>
+  </mvc:interceptors>-->
+  
 </beans>

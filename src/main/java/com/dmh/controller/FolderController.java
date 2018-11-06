@@ -10,20 +10,21 @@
  */
 package com.dmh.controller;
 
+import com.dmh.ResponseResult;
 import com.dmh.dto.Folder;
 import com.dmh.service.FolderService;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
+import java.util.concurrent.Callable;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -35,7 +36,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 //@SessionAttributes(value = {"userId"})
-public class FolderController {
+public class FolderController{
 
   private FolderService folderService;
 
@@ -44,15 +45,23 @@ public class FolderController {
     this.folderService = folderService;
   }
 
+  private Logger logger = Logger.getLogger(FolderController.class);
+
+  @RequestMapping(path = "/hello.action", method = RequestMethod.GET)
+  public String sayHello() {
+    logger.warn("say hello ");
+    return "hello interceptor";
+  }
+
   // 获得 session cookie 和 文件夹的 id
-  @RequestMapping("/folderContext.action")
-  public List<Folder> getFolderContext(@RequestParam("folderId") Integer folderId,
+  @RequestMapping(value = "/folderContext.action",method = RequestMethod.POST)
+  public List<Folder> getFolderContext(@RequestBody Folder folder,
       @CookieValue(value = "userID", defaultValue = "-111") String cookie) {
     cookie = "1";
     Map<String, String> errors = new HashMap<>();
-    if (folderId != null && folderId >= 0) {
+    if (folder.getFolderId() != null && folder.getFolderId() >= 0) {
       if (cookie != null && Integer.parseInt(cookie) >= 0) {
-        return folderService.getFolderByFolderId(folderId, Integer.parseInt(cookie));
+        return folderService.getFolderBySubFolderId(folder.getFolderId(), Integer.parseInt(cookie));
       } else {
         errors.put("cookie", "为空");
         throw new IllegalArgumentException(errors.toString());
@@ -64,12 +73,12 @@ public class FolderController {
   }
 
   @RequestMapping("/deleteFolder.action")
-  public int deleteFolder(@RequestParam("folderId") Integer folderId,
+  public int deleteFolder(@RequestBody Folder folder,
       @CookieValue(value = "userID", defaultValue = "-111") String cookie) {
     cookie = "1";
     Map<String, String> errors = new HashMap<>();
-    if (folderId != null && folderId >= 0) {
-      if (folderService.deleteFolder(folderId) == 1) {
+    if (folder.getFolderId() != null && folder.getFolderId() >= 0) {
+      if (folderService.deleteFolder(folder.getFolderId()) == 1) {
         return 1;
       } else {
         errors.put("errorMessage", "删除失败");
@@ -82,20 +91,20 @@ public class FolderController {
   }
 
   @RequestMapping("/alterFolderName.action")
-  public Folder alterFolderName(@RequestParam("folderId") Integer folderId,
-      @RequestParam("folderName") String folderName,
+  public Folder alterFolderName(@RequestBody Folder folder,
       @CookieValue(value = "userID", defaultValue = "-111") String cookie) {
     cookie = "1";
     Map<String, String> errors = new HashMap<>();
-    if (folderId != null && folderId >= 0) {
-      if (folderName != null && !"".equals(folderName)) {
-        Folder folder = folderService
-            .alterFolderName(folderId, folderName, Integer.parseInt(cookie));
-        if (folder == null) {
+    if (folder.getFolderId() != null && folder.getFolderId() >= 0) {
+      if (folder.getFolderName() != null && !"".equals(folder.getFolderName())) {
+        Folder folder1 = folderService
+            .alterFolderName(folder.getFolderId(), folder.getFolderName(),
+                Integer.parseInt(cookie));
+        if (folder1 == null) {
           errors.put("errorMessage", "没有这个对应的文件");
           throw new IllegalArgumentException(errors.toString());
         } else {
-          return folder;
+          return folderService.getFolderByFolderId(folder1.getFolderId(), Integer.parseInt(cookie));
         }
       } else {
         errors.put("folderName", "不能为空");
@@ -105,6 +114,47 @@ public class FolderController {
       errors.put("folder", "为空或者小于0");
       throw new IllegalArgumentException(errors.toString());
     }
+  }
+
+  @RequestMapping("/newFolder.action")
+  public int newFolder(@RequestBody Folder folderss,
+      @CookieValue(value = "userID", defaultValue = "-111") String cookie) {
+    cookie = "1";
+    Map<String, String> errors = new HashMap<>();
+    if (folderss.getFolderSuperiorId() != null && folderss.getFolderSuperiorId() >= 0) {
+      if (folderss.getFolderName() != null && !"".equals(folderss.getFolderName())) {
+        int i = folderService.insertFolder(folderss.getFolderSuperiorId(), folderss.getFolderName(),
+            Integer.parseInt(cookie));
+        if (i == 0) {
+          errors.put("errorMessage", "创建失败");
+          throw new IllegalArgumentException(errors.toString());
+        } else {
+          return i;
+        }
+      } else {
+        errors.put("folderName", "不能为空");
+        throw new IllegalArgumentException(errors.toString());
+      }
+    } else {
+      errors.put("folder", "为空或者小于0");
+      throw new IllegalArgumentException(errors.toString());
+    }
+  }
+
+  @RequestMapping("deleteList.action")
+  public ResponseResult<String> deleteList(@RequestBody List<Folder> folders,
+      @CookieValue(value = "userID", defaultValue = "-111") String cookie) {
+    cookie = "1";
+    // cookie 判断，没写
+
+    if (folders != null && folders.size() > 0) {
+      List<String> resutl = new ArrayList<>();
+      resutl.add(String.valueOf(folderService.deleteFolderList(folders, Integer.parseInt(cookie))));
+      return new ResponseResult<>(true, null, null);
+    } else {
+      return new ResponseResult<>(false, null, "it is error data");
+    }
+
   }
 
 

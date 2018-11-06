@@ -30,7 +30,10 @@ public interface FolderService {
    * @param  userId 必须的，为用户的ID。
    * @return
    */
-  List<Folder> getFolderByFolderId(@NotNull Integer folderId,Integer userId);
+  List<Folder> getFolderBySubFolderId(@NotNull Integer folderId,Integer userId);
+  Folder getFolderByFolderId(@NotNull Integer folderId,Integer userId);
   Folder alterFolderName(Integer folderId,String folderName,Integer userId);
   int deleteFolder(Integer folderId);
+  int insertFolder(Integer subFolderId,String folderName,Integer userId);
+  int deleteFolderList(List<Folder> folders,Integer userId);
 }

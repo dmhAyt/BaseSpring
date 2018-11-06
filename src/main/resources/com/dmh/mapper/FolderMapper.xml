@@ -24,9 +24,16 @@
   <update id="deleteFolder">
     update <include refid="tableName"/>
     set folder_active = false
-
     where folder_id = #{folderId}  or folder_superior_id = #{folderId}
   </update>
+
+  <update id="deleteFolderList">
+    update <include refid="tableName"/> set folder_active = false where floder_own_user = #{userId} and folder_id in
+    <foreach collection="folders" item="folder" open="(" close=")" separator=",">
+       #{folder.folderId}
+    </foreach>
+  </update>
+
   <select id="findFolderById" resultType="com.dmh.dto.Folder">
     select <include refid="selectParameter"/> from <include refid="tableName"/>
     where folder_id = #{folderId} and floder_own_user=#{userId} and folder_active = true

@@ -30,7 +30,7 @@ public class Folder {
   private Integer folderSuperiorId;
   private Integer folderFileId;
   private Integer folderOwnUser;
-  private String folderCreateDateStr;
+  private String folderCreateDateStr="kk";
   private boolean folderActive = true;
   private BigDecimal folderSizes;
   private int rowVersion = 1;
@@ -53,7 +53,8 @@ public class Folder {
 
   public String getFolderCreateDateStr() {
     SimpleDateFormat sim = new SimpleDateFormat(DATE_PATTERN);
-    return sim.format(folderCreateDate);
+    folderCreateDateStr = sim.format(folderCreateDate);
+    return folderCreateDateStr;
   }
 
   public String getFolderName() {
